@@ -1,3 +1,26 @@
+
+
+#include <stdint.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include "hw_ints.h"
+#include "hw_memmap.h"
+#include "gpio.h"
+#include "interrupt.h"
+#include "ioc.h"
+#include "hw_ioc.h"
+#include "sys_ctrl.h"
+#include "hw_i2cm.h"
+#include "hw_i2cs.h"
+#include "i2c.h"
+#include "ssd1306.h"
+#include "rtc3231.h"
+#include "i2c_init.h"
+#include "uart_init.h"
+#include "adxl345.h"
+
+static uint8_t OledBuffer[20];
+static uint8_t Adxl345Buffer[50];
 uint8_t _i2caddr, _vccstate, x_pos, y_pos, text_size;
 int wrap = true;        //int1 wrap=true
 
@@ -174,6 +197,29 @@ static uint8_t ssd1306_buffer[SSD1306_LCDHEIGHT * SSD1306_LCDWIDTH / 8] = {
 #endif
 };
 
+/*                        Get Time from RTC                                   */
+
+void SSD1306_DisplayTime(rtc_time_info_t rtc_time)
+{
+   sprintf(OledBuffer,"%2u:%2u\n",rtc_time.hours,rtc_time.mins);
+   SSD1306_DrawText(0, 0, OledBuffer, 1);         // Print time
+}
+
+/*                         Get Date                                           */
+
+void SSD1306_DisplayDate(rtc_date_info_t rtc_date)
+{
+   sprintf(OledBuffer,"%u - %u - %u\n",rtc_date.date,rtc_date.month,rtc_date.year);
+   SSD1306_DrawText(35, 55, OledBuffer, 1);         // Print time
+}
+
+/* Display ADXL Axis Values */
+
+void SSD1306_DisplayAxis(adxl345_axis_t adxl345_axis_info)
+{
+  sprintf(Adxl345Buffer,"%3u:3%u:%3u\n",adxl345_axis_info.x_axis,adxl345_axis_info.y_axis,adxl345_axis_info.z_axis);
+  SSD1306_DrawText(0, 8,Adxl345Buffer, 1);         // Print time
+}
 
 void SSD1306_SendByte(uint8_t c)
 {
